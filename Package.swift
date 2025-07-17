@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -24,7 +24,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "git@github.com:realm/SwiftLint.git", from: "0.53.0"),
+        .package(url: "git@github.com:SimplyDanny/SwiftLintPlugins.git", from: "0.53.0"),
         .package(url: "git@github.com:apple/swift-algorithms.git", from: "1.0.0")
     ],
     targets: [
@@ -35,11 +35,8 @@ let package = Package(
                 .target(name: "SecureBoxResources")
             ],
             path: "Executable",
-            swiftSettings: [
-                .strictConcurrency
-            ],
             plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]
         ),
         .target(
@@ -49,10 +46,10 @@ let package = Package(
             ],
             path: "Resources",
             swiftSettings: [
-                .strictConcurrency
+                .disableReflectionMetadata
             ],
             plugins: [
-                .plugin(name: "SwiftLintPlugin", package: "SwiftLint")
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]
         ),
         .plugin(
@@ -72,9 +69,6 @@ let package = Package(
             exclude: [
                 "Box"
             ],
-            swiftSettings: [
-                .strictConcurrency
-            ],
             plugins: [
                 .plugin(name: "SecureBoxPlugin")
             ]
@@ -84,5 +78,5 @@ let package = Package(
 
 // MARK: - SwiftSetting
 private extension SwiftSetting {
-    static let strictConcurrency = SwiftSetting.unsafeFlags(["-Xfrontend", "-strict-concurrency=complete"])
+    static let disableReflectionMetadata = SwiftSetting.unsafeFlags(["-Xfrontend", "-disable-reflection-metadata"], .when(configuration: .release))
 }

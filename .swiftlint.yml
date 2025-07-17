@@ -14,6 +14,11 @@ disabled_rules: # rule identifiers to exclude from running
 
     # since 0.40.0
     - computed_accessors_order
+    
+    - syntactic_sugar
+    
+    # since 0.56.0
+    - contrasted_opening_brace
 
 opt_in_rules: # some rules are only opt-in
     # nil coalescing operator is only evaluated if the lhs is nil, coalescing operator with nil as rhs is redundant
@@ -116,21 +121,39 @@ opt_in_rules: # some rules are only opt-in
     - optional_enum_case_matching
     - prefer_self_type_over_type_of_self
 
+    # opt-in since 0.38.2
+    - indentation_width
+
+    # opt-in since 0.39
+    #- void_function_in_ternary
+    #- return_value_from_void_function
+    #- tuple_pattern
+
     # opt-in since 0.40.0
     - ibinspectable_in_extension
+    #- prefer_zero_over_explicit_init
+    #- unneeded_notification_center_removal
     
     - direct_return
     - discarded_notification_center_observer
     - discouraged_assert
-    - explicit_enum_raw_value
+    # - explicit_enum_raw_value
     - self_binding
-    - trailing_closure
+    # - trailing_closure
     - unhandled_throwing_task
     - vertical_whitespace_between_cases
     - legacy_objc_type
     
     # opt-in since 0.53.0
     - private_swiftui_state
+        
+    # opt-in since 0.55.0
+    
+    # opt-in since 0.58.0
+    - async_without_await
+        
+    # opt-in since 0.59.0
+    # - opaque_over_existential
     
 analyzer_rules:
     - unused_import
@@ -156,10 +179,9 @@ lower_acl_than_parent: error
 closure_spacing: error
 explicit_init:
     severity: error
-private_outlet: error
 private_action: error
 convenience_type: error
-vertical_whitespace_opening_braces: error
+#vertical_whitespace_opening_braces: error
 vertical_whitespace_closing_braces:
     severity: warning
 comma: error
@@ -173,11 +195,11 @@ function_body_length:
 trailing_whitespace:
     ignores_empty_lines: true
     ignores_comments: true
-    ignores_urls: true
 
 nesting:
-    type_level: 3
-    severity: error
+    type_level:
+        error: 3
+        warning: 3
 
 private_outlet:
     allow_private_set: true
@@ -192,8 +214,12 @@ line_length:
     ignores_interpolated_strings: true
 
 identifier_name:
-    min_length: 1
-    severity: error
+    min_length:
+        warning: 1
+        error: 1
+    max_length:
+        warning: 50
+        error: 50
 
 type_name:
     max_length:
@@ -204,3 +230,15 @@ file_length:
     warning: 400
     error: 600
     ignore_comment_only_lines: true
+
+indentation_width:
+    include_comments: false
+    include_multiline_strings: false
+    
+redundant_discardable_let:
+    ignore_swiftui_view_bodies: true
+
+#attributes:
+#    always_on_same_line: ["@objc", "@IBAction", "@frozen", "@escaping"]
+#    always_on_line_above: ["@available", "@inlinable", "@discardableResult", "@ObservedObject", "@Atomic", "@Published", "@State"]
+#    severity: error

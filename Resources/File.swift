@@ -7,8 +7,8 @@
 import Foundation
 import Algorithms
 
-public struct File {
-    public struct Path {
+public struct File: Sendable {
+    public struct Path: Sendable {
         private let name: String
         private let `extension`: String?
         private let subdirectory: String?
