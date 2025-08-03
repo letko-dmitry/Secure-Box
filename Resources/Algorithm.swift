@@ -5,7 +5,8 @@
 //  Created by Dzmitry Letko on 25/09/2023.
 //
 
-import Foundation
+package import Foundation
+
 import CryptoKit
 
 package struct Algorithm {
@@ -45,14 +46,14 @@ package extension Algorithm.Key {
 
 // MARK: - Algorithm.Key
 extension Algorithm.Key: Codable {
-    package init(from decoder: Decoder) throws {
+    package init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
         
         symmetric = .init(data: data)
     }
     
-    package func encode(to encoder: Encoder) throws {
+    package func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(symmetric.withUnsafeBytes(Data.init(_:)))
     }

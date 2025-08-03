@@ -4,7 +4,9 @@
 //
 //  Created by Dzmitry Letko on 24/09/2023.
 //
-import Foundation
+
+public import Foundation
+
 import Algorithms
 
 public struct File: Sendable {
