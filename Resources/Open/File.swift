@@ -1,38 +1,17 @@
 //
 //  File.swift
-//  
+//  Secure-Box
 //
-//  Created by Dzmitry Letko on 24/09/2023.
+//  Created by Dzmitry Letko on 09/10/2025.
 //
 
+public import SecureBoxTypes
 public import Foundation
 
 import Algorithms
 
-public struct File: Sendable {
-    public struct Path: Sendable {
-        private let name: String
-        private let `extension`: String?
-        private let subdirectory: String?
-        private let bundle: Bundle
-        
-        public init(name: String, extension: String? = "dat", subdirectory: String? = nil, bundle: Bundle = .main) {
-            self.name = name
-            self.extension = `extension`
-            self.subdirectory = subdirectory
-            self.bundle = bundle
-        }
-    }
-    
-    private let path: Path
-    private let key: String
-    
-    public init(path: Path, key: String) {
-        self.path = path
-        self.key = key
-    }
-    
-    public func open() throws -> Data {
+public extension File {
+    func open() throws -> Data {
         enum OpenError: Error {
             case invalidPath
             case invalidKey

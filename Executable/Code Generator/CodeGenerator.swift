@@ -5,8 +5,10 @@
 //  Created by Dzmitry Letko on 25/09/2023.
 //
 
-import Foundation
 import Algorithms
+import Foundation
+import SecureBoxTypes
+import SecureBoxSeal
 
 struct CodeGenerator {
     let fileUrl: URL
@@ -14,7 +16,7 @@ struct CodeGenerator {
     func generate(for resources: [Resource]) throws {
         let declarations = resources.map { resource in
             """
-                static let \(resource.input.variableName) = SecureBoxResources.File(
+                static let \(resource.input.variableName) = SecureBoxTypes.File(
                     path: .init(
                         name: \"\(resource.output.name)\"
                     ),
@@ -25,7 +27,7 @@ struct CodeGenerator {
         
         let code = """
             import Foundation
-            import SecureBoxResources
+            import SecureBoxTypes
             
             enum SecureBox {
             \(declarations.joined(separator: "\n\n"))

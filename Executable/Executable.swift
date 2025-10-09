@@ -1,5 +1,6 @@
 import Foundation
-import SecureBoxResources
+import SecureBoxTypes
+import SecureBoxSeal
 
 @main
 enum Executable {
@@ -73,9 +74,9 @@ private extension Executable {
         try await withThrowingDiscardingTaskGroup { group in
             resources.forEach { resource in
                 group.addTask {
-                    let inputData = try ResourceReader.read(input: resource.input)
-                    let outputData = try Algorithm().seal(inputData, using: resource.output.key)
-                    try outputData.write(to: resource.output.url)
+                    let data = try ResourceReader.read(input: resource.input)
+                    let algorithm = Algorithm()
+                    try algorithm.seal(data, using: resource.output.key).write(to: resource.output.url)
                 }
             }
         }

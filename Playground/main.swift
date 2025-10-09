@@ -6,5 +6,6 @@
 //
 
 import Foundation
+import SecureBoxOpen
 
 print(try JSONSerialization.jsonObject(with: SecureBox.exampleJson.open(), options: []))

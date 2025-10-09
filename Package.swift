@@ -1,4 +1,4 @@
-// swift-tools-version:6.1
+// swift-tools-version: 6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -13,7 +13,8 @@ let package = Package(
         .library(
             name: "SecureBoxResources",
             targets: [
-                "SecureBoxResources"
+                "SecureBoxTypes",
+                "SecureBoxOpen"
             ]
         ),
         .plugin(
@@ -32,25 +33,42 @@ let package = Package(
             name: "SecureBoxExecutable",
             dependencies: [
                 .product(name: "Algorithms", package: "swift-algorithms"),
-                .target(name: "SecureBoxResources")
+                .target(name: "SecureBoxTypes"),
+                .target(name: "SecureBoxSeal")
             ],
             path: "Executable",
+            swiftSettings: .default,
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]
         ),
         .target(
-            name: "SecureBoxResources",
+            name: "SecureBoxTypes",
+            path: "Resources/Types",
+            swiftSettings: .default,
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]
+        ),
+        .target(
+            name: "SecureBoxOpen",
             dependencies: [
-                .product(name: "Algorithms", package: "swift-algorithms")
+                .product(name: "Algorithms", package: "swift-algorithms"),
+                .target(name: "SecureBoxTypes")
             ],
-            path: "Resources",
-            swiftSettings: [
-                .disableReflectionMetadata,
-                .internalImportsByDefault,
-                .existentialAny,
-                .memberImportVisibility
+            path: "Resources/Open",
+            swiftSettings: .default,
+            plugins: [
+                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+            ]
+        ),
+        .target(
+            name: "SecureBoxSeal",
+            dependencies: [
+                .target(name: "SecureBoxTypes")
             ],
+            path: "Resources/Seal",
+            swiftSettings: .default,
             plugins: [
                 .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
             ]
@@ -66,12 +84,14 @@ let package = Package(
         .executableTarget(
             name: "SecureBoxPlayground",
             dependencies: [
-                .target(name: "SecureBoxResources")
+                .target(name: "SecureBoxTypes"),
+                .target(name: "SecureBoxOpen"),
             ],
             path: "Playground",
             exclude: [
                 "Box"
             ],
+            swiftSettings: .default,
             plugins: [
                 .plugin(name: "SecureBoxPlugin")
             ]
@@ -82,7 +102,19 @@ let package = Package(
 // MARK: - SwiftSetting
 private extension SwiftSetting {
     static let disableReflectionMetadata = SwiftSetting.unsafeFlags(["-Xfrontend", "-disable-reflection-metadata"], .when(configuration: .release))
+    static let approachableConcurrency = SwiftSetting.enableUpcomingFeature("ApproachableConcurrency")
     static let internalImportsByDefault = SwiftSetting.enableUpcomingFeature("InternalImportsByDefault")
     static let existentialAny = SwiftSetting.enableUpcomingFeature("ExistentialAny")
     static let memberImportVisibility = SwiftSetting.enableUpcomingFeature("MemberImportVisibility")
+}
+
+// MARK: - SwiftSetting
+private extension Array<SwiftSetting> {
+    static let `default`: Self = [
+        .disableReflectionMetadata,
+        .internalImportsByDefault,
+        .approachableConcurrency,
+        .existentialAny,
+        .memberImportVisibility
+    ]
 }
