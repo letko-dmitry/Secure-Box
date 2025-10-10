@@ -48,8 +48,8 @@ package extension SecureBoxTypes.Algorithm {
 // MARK: - Algorithm.Key
 package extension SecureBoxTypes.Algorithm.Key {
     var base64: String {
-        symmetric.withUnsafeBytes { buffer in
-            Data(buffer).base64EncodedString()
+        unsafe symmetric.withUnsafeBytes { buffer in
+            unsafe Data(buffer).base64EncodedString()
         }
     }
     
@@ -60,7 +60,7 @@ package extension SecureBoxTypes.Algorithm.Key {
 
 // MARK: - Algorithm.Key: Decodable
 extension SecureBoxTypes.Algorithm.Key: Decodable {
-    package init(from decoder: any Decoder) throws {
+    package init(from decoder: borrowing any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
         
@@ -72,6 +72,6 @@ extension SecureBoxTypes.Algorithm.Key: Decodable {
 extension SecureBoxTypes.Algorithm.Key: Encodable {
     package func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
-        try container.encode(symmetric.withUnsafeBytes(Data.init(_:)))
+        try container.encode(unsafe symmetric.withUnsafeBytes(Data.init(_:)))
     }
 }

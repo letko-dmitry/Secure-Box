@@ -17,9 +17,8 @@ struct Plugin: BuildToolPlugin, XcodeBuildToolPlugin {
             throw BuildToolPluginError.sourceModuleUnavailable
         }
         
-        let directory = URL(filePath: module.directory.string, directoryHint: .isDirectory)
         let enumerator = FileManager.default.enumerator(
-            at: directory,
+            at: module.directoryURL,
             includingPropertiesForKeys: [
                 .isDirectoryKey
             ],

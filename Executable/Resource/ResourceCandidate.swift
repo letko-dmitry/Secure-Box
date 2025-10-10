@@ -18,14 +18,14 @@ struct ResourceCandidate: Hashable {
         self.outputUrl = .init(filePath: output, directoryHint: .notDirectory)
     }
     
-    init(resource: Resource) {
+    init(resource: borrowing Resource) {
         input = resource.input
         outputUrl = resource.output.url
     }
 }
 
 extension ResourceCandidate {
-    init(resource: ExecutableTask.Resource) throws {
+    init(resource: borrowing ExecutableTask.Resource) throws {
         try self.init(input: resource.input, output: resource.output)
     }
 }

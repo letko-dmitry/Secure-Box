@@ -41,10 +41,7 @@ struct CodeGenerator {
 // MARK: - Resource.Input
 private extension Resource.Input {
     var variableName: String {
-        let fileNameComponents = url
-            .deletingPathExtension()
-            .lastPathComponent
-            .components(separatedBy: ".")
+        let fileNameComponents = url.fileName.components(separatedBy: ".")
         
         var variableNameComponents: [String?] = []
         variableNameComponents.append(fileNameComponents.first?.lowercased())
@@ -58,6 +55,13 @@ private extension Resource.Input {
 // MARK: - Resource.Output
 private extension Resource.Output {
     var name: String {
-        url.deletingPathExtension().lastPathComponent
+        url.fileName
+    }
+}
+
+// MARK: - URL
+private extension URL {
+    var fileName: String {
+        deletingPathExtension().lastPathComponent
     }
 }

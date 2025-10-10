@@ -44,7 +44,7 @@ struct Resource: Codable {
     let input: Input
     let output: Output
     
-    init(candidate: ResourceCandidate) {
+    init(candidate: borrowing ResourceCandidate) {
         self.input = candidate.input
         self.output = .init(url: candidate.outputUrl)
     }

@@ -21,7 +21,7 @@ struct ExecutablePaths {
     let directories: Directories
     let files: Files
     
-    init(task: ExecutableTask) {
+    init(task: borrowing ExecutableTask) {
         directories = .init(
             rootUrl: .init(filePath: task.root, directoryHint: .isDirectory),
             boxUrl: .init(filePath: task.box, directoryHint: .isDirectory)
