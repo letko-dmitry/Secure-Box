@@ -9,39 +9,11 @@ package import Foundation
 package import SecureBoxTypes
 
 import CryptoKit
-import Compression
 
 package extension SecureBoxTypes.Algorithm {
     func seal(_ data: Data, using key: Key) throws -> Data {
-        var compressed = Data()
-        
-        let compressionPageSize = 65_536
-        let compression = try OutputFilter(.compress, using: .lzfse) { data in
-            if let data {
-                compressed.append(data)
-            }
-        }
-        
-        let bufferSize = data.count
-        var bufferIndex = 0
-        
-        while true {
-            let length = min(compressionPageSize, bufferSize - bufferIndex)
-            
-            if length == 0 {
-                try compression.finalize()
-                
-                break
-            }
-            
-            let subdata = data.subdata(in: bufferIndex ..< bufferIndex + length)
-            
-            bufferIndex += length
-            
-            try compression.write(subdata)
-        }
-        
-        return try ChaChaPoly.seal(compressed, using: key.symmetric).combined
+        // swiftlint:disable:next legacy_objc_type
+        try ChaChaPoly.seal((data as NSData).compressed(using: .lzfse), using: key.symmetric).combined
     }
 }
 
