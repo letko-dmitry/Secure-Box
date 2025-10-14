@@ -6,9 +6,6 @@ disabled_rules: # rule identifiers to exclude from running
     # String enum values can be omitted when they are equal to the enumcase name
     - redundant_string_enum_value
 
-    # Operators should be surrounded by a single whitespace when defining them.
-    - operator_whitespace
-
     # since 0.38.2
     - orphaned_doc_comment # weird false-positives
 
@@ -19,6 +16,9 @@ disabled_rules: # rule identifiers to exclude from running
     
     # since 0.56.0
     - contrasted_opening_brace
+
+    # since 0.61.0
+    - function_name_whitespace
 
 opt_in_rules: # some rules are only opt-in
     # nil coalescing operator is only evaluated if the lhs is nil, coalescing operator with nil as rhs is redundant
