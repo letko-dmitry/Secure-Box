@@ -102,7 +102,7 @@ let package = Package(
 // MARK: - SwiftSetting
 private extension SwiftSetting {
     static let disableReflectionMetadata = SwiftSetting.unsafeFlags(["-Xfrontend", "-disable-reflection-metadata"], .when(configuration: .release))
-    static let strictMemorySafety = SwiftSetting.unsafeFlags(["-Xfrontend", "-strict-memory-safety"])
+    static let internalizeAtLink = SwiftSetting.unsafeFlags(["-Xfrontend", "-internalize-at-link"], .when(configuration: .release))
     static let approachableConcurrency = SwiftSetting.enableUpcomingFeature("ApproachableConcurrency")
     static let internalImportsByDefault = SwiftSetting.enableUpcomingFeature("InternalImportsByDefault")
     static let existentialAny = SwiftSetting.enableUpcomingFeature("ExistentialAny")
@@ -113,10 +113,11 @@ private extension SwiftSetting {
 private extension Array<SwiftSetting> {
     static let `default`: Self = [
         .disableReflectionMetadata,
-        .strictMemorySafety,
+        .internalizeAtLink,
         .internalImportsByDefault,
         .approachableConcurrency,
         .existentialAny,
-        .memberImportVisibility
+        .memberImportVisibility,
+        .strictMemorySafety()
     ]
 }
