@@ -20,13 +20,14 @@ struct CodeGenerator {
                     path: .init(
                         name: \"\(resource.output.name)\"
                     ),
-                    key: \"\(resource.output.key.base64)\"
+                    key: #ObfuscatedString(\"\(resource.output.key.base64)\")
                 )
             """
         }
         
         let code = """
             import Foundation
+            import ObfuscateMacro
             import SecureBoxTypes
             
             enum SecureBox {

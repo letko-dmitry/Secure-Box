@@ -15,7 +15,10 @@ enum ResourceReader {
         switch input.type {
         case UTType.json:
             return try JSONSerialization.data(withJSONObject: JSONSerialization.jsonObject(with: data))
-            
+
+        case UTType.propertyList:
+            return try unsafe PropertyListSerialization.data(fromPropertyList: PropertyListSerialization.propertyList(from: data, format: nil), format: .binary, options: 0)
+
         default:
             return data
         }
