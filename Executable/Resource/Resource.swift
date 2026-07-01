@@ -12,7 +12,7 @@ import SecureBoxSeal
 
 struct Resource: Codable {
     struct Input: Codable, Hashable {
-        enum ResourceCandidateError: Error {
+        enum InputError: Error {
             case unknownContentModificationDate(URL)
         }
         
@@ -23,7 +23,7 @@ struct Resource: Codable {
             let resources = try url.resourceValues(forKeys: [.contentModificationDateKey])
 
             guard let modified = resources.contentModificationDate else {
-                throw ResourceCandidateError.unknownContentModificationDate(url)
+                throw InputError.unknownContentModificationDate(url)
             }
             
             self.url = url

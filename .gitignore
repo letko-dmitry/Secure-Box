@@ -8,3 +8,6 @@ DerivedData
 ## SPM
 .swiftpm
 Package.resolved
+
+## Claude
+.build

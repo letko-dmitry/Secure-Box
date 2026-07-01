@@ -9,12 +9,12 @@ import Foundation
 
 struct ExecutableTask: Decodable {
     struct Resource: Decodable {
-        let input: String
-        let output: String
+        let input: URL
+        let output: URL
     }
     
-    let root: String
-    let code: String
-    let box: String
+    let root: URL
+    let code: URL
+    let box: URL
     let resources: [Resource]
 }

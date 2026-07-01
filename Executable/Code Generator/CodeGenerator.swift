@@ -35,7 +35,7 @@ struct CodeGenerator {
             }
             """
         
-        try code.write(to: fileUrl, atomically: false, encoding: .utf8)
+        try code.write(to: fileUrl, atomically: true, encoding: .utf8)
     }
 }
 
@@ -46,7 +46,7 @@ private extension Resource.Input {
         
         var variableNameComponents: [String?] = []
         variableNameComponents.append(fileNameComponents.first?.lowercased())
-        variableNameComponents.append(contentsOf: fileNameComponents.dropFirst().map { $0.capitalized })
+        variableNameComponents.append(contentsOf: fileNameComponents.dropFirst().map(\.capitalized))
         variableNameComponents.append(url.pathExtension.capitalized)
         
         return variableNameComponents.compacted().joined()

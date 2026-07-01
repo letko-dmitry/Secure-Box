@@ -11,11 +11,9 @@ struct ResourceCandidate: Hashable {
     let input: Resource.Input
     let outputUrl: URL
     
-    init(input: String, output: String) throws {
-        self.input = try .init(
-            url: .init(filePath: input, directoryHint: .notDirectory)
-        )
-        self.outputUrl = .init(filePath: output, directoryHint: .notDirectory)
+    init(input: URL, output: URL) throws {
+        self.input = try .init(url: input)
+        self.outputUrl = output
     }
     
     init(resource: borrowing Resource) {

@@ -6,16 +6,15 @@
 //
 
 import Foundation
-import PackagePlugin
 
 struct PluginTask: Encodable {
     struct Resource: Encodable {
-        let input: Path
-        let output: Path
+        let input: URL
+        let output: URL
     }
-    
-    let root: Path
-    let code: Path
-    let box: Path
+
+    let root: URL
+    let code: URL
+    let box: URL
     let resources: [Resource]
 }

@@ -18,7 +18,7 @@ private extension Executable {
     static func execute(task: ExecutableTask) async throws {
         let paths = ExecutablePaths(task: task)
         
-        async let (cache, cacheCorrupted) = Cache.read(from: paths.files.cacheUrl)
+        async let (cache, cacheCorrupted) = Cache.read(from: paths.files.cache)
         async let candidates = try task.resources.map(ResourceCandidate.init(resource:))
         
         let diff = try await ResourceDiffBuilder.make(
@@ -29,19 +29,21 @@ private extension Executable {
         let (reset, hasCache) = await (cacheCorrupted, cache != nil)
         
         if diff.hasChanges || !hasCache {
+            let all = diff.all.sorted(using: SortDescriptor(\.input.url.absoluteString, comparator: .lexical))
+            
             try await withThrowingDiscardingTaskGroup { group in
                 if diff.hasChanges {
                     group.addTask {
-                        try await apply(diff: diff, clean: reset, at: paths.directories.boxUrl)
+                        try await apply(diff: diff, clean: reset, at: paths.directories.box)
                     }
                 }
                 
                 group.addTask {
-                    Cache(resources: diff.all).write(to: paths.files.cacheUrl)
+                    Cache(resources: all).write(to: paths.files.cache)
                 }
                 
                 group.addTask {
-                    try CodeGenerator(fileUrl: paths.files.codeUrl).generate(for: diff.all)
+                    try CodeGenerator(fileUrl: paths.files.code).generate(for: all)
                 }
             }
         }

@@ -44,7 +44,7 @@ enum ResourceDiffBuilder {
                 delete.append(resource)
             }
         }
-        
+
         return .init(all: all, encrypt: encrypt, delete: delete)
     }
 }

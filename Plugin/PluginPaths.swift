@@ -6,38 +6,38 @@
 //
 
 import Foundation
-import PackagePlugin
 
 struct PluginPaths {
     struct Directories {
-        let root: Path
-        let output: Path
-        let box: Path
+        let root: URL
+        let output: URL
+        let box: URL
         
-        init(root: Path) {
+        init(root: URL) {
             self.root = root
-            self.output = root.appending(subpath: "Output")
-            self.box = output.appending(subpath: "Box")
+            self.output = root.appending(component: "Output", directoryHint: .isDirectory)
+            self.box = output.appending(component: "Box", directoryHint: .isDirectory)
         }
     }
     
     struct Files {
-        let code: Path
-        let task: Path
+        let code: URL
+        let task: URL
     }
     
     let directories: Directories
     let files: Files
     
-    init(root: Path) {
+    init(root: URL) {
         directories = .init(root: root)
         files = .init(
-            code: directories.output.appending(subpath: "Box.swift"),
-            task: directories.root.appending(subpath: "task.json")
+            code: directories.output.appending(component: "Box.swift", directoryHint: .notDirectory),
+            task: directories.root.appending(component: "task.json", directoryHint: .notDirectory)
         )
     }
     
-    func output(name: String) -> Path {
-        return directories.box.appending(subpath: "\(name).dat")
+    /** Builds the `Output/Box/<name>.dat` path for a sealed resource. */
+    func output(name: String) -> URL {
+        return directories.box.appending(component: "\(name).dat", directoryHint: .notDirectory)
     }
 }
