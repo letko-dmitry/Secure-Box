@@ -9,3 +9,4 @@ import Foundation
 import SecureBoxOpen
 
 print(try JSONSerialization.jsonObject(with: SecureBox.exampleJson.open(), options: []))
+print(try JSONSerialization.jsonObject(with: SecureBox.exampleCopy2Json.open(), options: []))
