@@ -1,22 +1,86 @@
 import Foundation
 import PackagePlugin
-import XcodeProjectPlugin
 
 @main
-struct Plugin: BuildToolPlugin, XcodeBuildToolPlugin {
+struct Plugin: BuildToolPlugin {
     let targetDirectoryName = "Box"
     let toolName = "SecureBoxExecutable"
-    
+
     func createBuildCommands(context: PluginContext, target: Target) async throws -> [Command] {
-        enum BuildToolPluginError: Error {
-            case sourceModuleUnavailable
-            case directoryContentUnavailable
-        }
-        
         guard let module = target.sourceModule else {
-            throw BuildToolPluginError.sourceModuleUnavailable
+            throw PluginError.sourceModuleUnavailable(target.name)
         }
-        
+
+        let diagnostics = PluginDiagnostics(
+            targetName: target.name,
+            targetDirectoryName: targetDirectoryName
+        )
+        let scan = try scan(module: module, diagnostics: diagnostics)
+
+        diagnostics.discovered(scan: scan, root: module.directoryURL)
+        diagnostics.escaping(candidates: scan.candidates, root: module.directoryURL)
+        diagnostics.dependencies(of: target.dependencies, severity: .error)
+
+        return try process(
+            candidates: scan.candidates,
+            at: context.pluginWorkDirectoryURL,
+            using: context.tool(named: toolName),
+            diagnostics: diagnostics
+        )
+    }
+}
+
+// MARK: - shared
+extension Plugin {
+    func process(candidates: [URL], at workDirectory: URL, using executable: PackagePlugin.PluginContext.Tool, diagnostics: PluginDiagnostics) throws -> [Command] {
+        let paths = PluginPaths(root: workDirectory)
+        let inputs = candidates.sorted { $0.absoluteString < $1.absoluteString }
+        let resources = inputs.map { candidate in
+            PluginTask.Resource(
+                input: candidate,
+                output: paths.output(
+                    name: candidate.deletingPathExtension().lastPathComponent
+                )
+            )
+        }
+
+        diagnostics.collisions(resources: resources)
+
+        let task = PluginTask(
+            root: paths.directories.root,
+            code: paths.files.code,
+            box: paths.directories.box,
+            resources: resources
+        )
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+
+        let encoded = try encoder.encode(task)
+        try encoded.write(to: paths.files.task)
+
+        return [
+            .buildCommand(
+                displayName: "Executing an encryption task at: \(paths.files.task)",
+                executable: executable.url,
+                arguments: [
+                    paths.files.task.path(percentEncoded: false)
+                ],
+                inputFiles: inputs,
+                outputFiles: [paths.files.code] + resources.map(\.output)
+            )
+        ]
+    }
+}
+
+// MARK: - private
+private extension Plugin {
+    func scan(module: any SourceModuleTarget, diagnostics: PluginDiagnostics) throws -> PluginScan {
+        let attached = Dictionary(
+            module.sourceFiles.map { ($0.url.attachmentKey, $0.type) },
+            uniquingKeysWith: { first, _ in first }
+        )
+
         let enumerator = FileManager.default.enumerator(
             at: module.directoryURL,
             includingPropertiesForKeys: [
@@ -28,99 +92,47 @@ struct Plugin: BuildToolPlugin, XcodeBuildToolPlugin {
             ]
         )
 
-        guard let enumerator = enumerator else {
-            throw BuildToolPluginError.directoryContentUnavailable
+        guard let enumerator else {
+            throw PluginError.directoryContentUnavailable(module.directoryURL)
         }
-        
-        let attached = Set(module.sourceFiles.map(\.url))
-        let candidates: [URL] = try enumerator.compactMap { element in
-            guard let url = element as? URL else { throw BuildToolPluginError.directoryContentUnavailable }
-            guard !attached.contains(url) else { return nil }
-            guard let isDirectory = try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory else {
-                throw BuildToolPluginError.directoryContentUnavailable
+
+        var candidates: [URL] = []
+        var directories: Set<URL> = []
+
+        for element in enumerator {
+            guard let url = (element as? URL)?.standardizedFileURL else {
+                throw PluginError.directoryContentUnavailable(module.directoryURL)
             }
-            guard !isDirectory else { return nil }
-            guard url.deletingLastPathComponent().lastPathComponent == targetDirectoryName else { return nil }
-            
-            return url
-        }
-        
-        return try process(
-            candidates: candidates,
-            in: context
-        )
-    }
-    
-    func createBuildCommands(context: XcodePluginContext, target: XcodeTarget) throws -> [Command] {
-        let attached = Set(target.inputFiles.map(\.url))
-        let candidates: [URL] = context.xcodeProject.filePaths.compactMap { path in
-            let url = URL(filePath: path.string)
-            
-            guard !attached.contains(url) else { return nil }
-            guard url.deletingLastPathComponent().lastPathComponent == targetDirectoryName else { return nil }
-            
-            return url
+
+            let isBox = url.lastPathComponent == targetDirectoryName
+            let isBoxed = url.deletingLastPathComponent().lastPathComponent == targetDirectoryName
+
+            guard isBox || isBoxed else { continue }
+            guard let isDirectory = try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory else {
+                throw PluginError.directoryContentUnavailable(url)
+            }
+            guard !isDirectory else {
+                if isBox {
+                    directories.insert(url)
+
+                    if let type = attached[url.attachmentKey] {
+                        diagnostics.attached(directory: url, type: type)
+                    }
+                }
+
+                continue
+            }
+            guard isBoxed else { continue }
+
+            directories.insert(url.deletingLastPathComponent())
+
+            if let type = attached[url.attachmentKey] {
+                diagnostics.attached(file: url, type: type)
+            } else {
+                candidates.append(url)
+            }
         }
 
-        return try process(
-            candidates: candidates,
-            in: context
-        )
-    }
-}
-
-// MARK: - private
-private extension Plugin {
-    func process(candidates: [URL], in context: PluginContext) throws -> [Command] {
-        return try process(
-            candidates: candidates,
-            at: context.pluginWorkDirectoryURL,
-            using: context.tool(named: toolName)
-        )
-    }
-    
-    func process(candidates: [URL], in context: XcodePluginContext) throws -> [Command] {
-        return try process(
-            candidates: candidates,
-            at: context.pluginWorkDirectoryURL,
-            using: context.tool(named: toolName)
-        )
-    }
-    
-    func process(candidates: [URL], at workDirectory: URL, using executable: PackagePlugin.PluginContext.Tool) throws -> [Command] {
-        let paths = PluginPaths(root: workDirectory)
-        let resources = candidates.map { candidate in
-            PluginTask.Resource(
-                input: candidate,
-                output: paths.output(
-                    name: candidate.deletingPathExtension().lastPathComponent
-                )
-            )
-        }
-        
-        let task = PluginTask(
-            root: paths.directories.root,
-            code: paths.files.code,
-            box: paths.directories.box,
-            resources: resources
-        )
-        
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-        
-        let encoded = try encoder.encode(task)
-        try encoded.write(to: paths.files.task)
-        
-        return [
-            .buildCommand(
-                displayName: "Executing an encryption task at: \(paths.files.task)",
-                executable: executable.url,
-                arguments: [
-                    paths.files.task.path(percentEncoded: false)
-                ],
-                inputFiles: candidates,
-                outputFiles: [paths.files.code] + resources.map(\.output)
-            )
-        ]
+        return .init(candidates: candidates, directories: directories)
     }
 }
