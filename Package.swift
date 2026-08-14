@@ -25,9 +25,9 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "git@github.com:SimplyDanny/SwiftLintPlugins.git", from: "0.53.0"),
-        .package(url: "git@github.com:apple/swift-algorithms.git", from: "1.0.0"),
-        .package(url: "git@github.com:p-x9/ObfuscateMacro.git", from: "0.13.0")
+        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins.git", from: "0.53.0"),
+        .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0"),
+        .package(url: "https://github.com/p-x9/ObfuscateMacro.git", from: "0.13.0")
     ],
     targets: [
         .executableTarget(

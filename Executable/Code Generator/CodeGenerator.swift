@@ -5,6 +5,7 @@
 //  Created by Dzmitry Letko on 25/09/2023.
 //
 
+import Algorithms
 import Foundation
 import SecureBoxTypes
 import SecureBoxSeal
@@ -46,7 +47,7 @@ private extension CodeGenerator {
             return .init(identifier: identifier, resource: resource)
         }
 
-        let duplicates = Dictionary(grouping: declarations, by: \.identifier.name).filter { $0.value.count > 1 }
+        let duplicates = declarations.grouped(by: \.identifier.name).filter { $0.value.count > 1 }
 
         guard duplicates.isEmpty else {
             throw CodeGeneratorError.duplicates(duplicates.mapValues { $0.map(\.resource.input.url) })

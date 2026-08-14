@@ -5,6 +5,7 @@
 //  Created by Dzmitry Letko on 13/08/2026.
 //
 
+import Algorithms
 import Foundation
 
 /** A Swift identifier derived from a file name, valid both where it is declared and where it is referenced. */
@@ -20,8 +21,10 @@ struct SwiftIdentifier {
 
 extension SwiftIdentifier {
     init?(fileUrl: URL) {
-        var components = fileUrl.deletingPathExtension().lastPathComponent.identifierComponents
-        components.append(contentsOf: fileUrl.pathExtension.identifierComponents)
+        let components = chain(
+            fileUrl.deletingPathExtension().lastPathComponent.identifierComponents,
+            fileUrl.pathExtension.identifierComponents
+        )
 
         guard let first = components.first else { return nil }
 
