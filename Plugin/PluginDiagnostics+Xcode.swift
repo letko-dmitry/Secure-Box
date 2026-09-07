@@ -55,38 +55,4 @@ extension PluginDiagnostics {
         }
     }
 }
-
-// MARK: - dependencies
-extension PluginDiagnostics {
-    func dependencies(of dependencies: [XcodeTargetDependency], severity: Diagnostics.Severity) {
-        var visited: Set<String> = []
-        var reachable: Set<String> = []
-
-        Self.collect(dependencies, visited: &visited, into: &reachable)
-
-        report(reachable: reachable, severity: severity)
-    }
-
-    static func collect(_ dependencies: [XcodeTargetDependency], visited: inout Set<String>, into reachable: inout Set<String>) {
-        dependencies.forEach { dependency in
-            switch dependency {
-            case let .target(target):
-                reachable.insert(target.displayName)
-
-                guard visited.insert(target.id).inserted else { return }
-
-                collect(target.dependencies, visited: &visited, into: &reachable)
-
-            case let .product(product):
-                reachable.insert(product.name)
-                product.targets.forEach { target in
-                    collect(target, visited: &visited, into: &reachable)
-                }
-
-            @unknown default:
-                return
-            }
-        }
-    }
-}
 #endif

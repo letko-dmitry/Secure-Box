@@ -21,7 +21,6 @@ extension Plugin: XcodeBuildToolPlugin {
 
         diagnostics.discovered(scan: scan, root: context.xcodeProject.directoryURL)
         diagnostics.escaping(candidates: scan.candidates, root: context.xcodeProject.directoryURL)
-        diagnostics.dependencies(of: target.dependencies, severity: .warning)
 
         return try process(
             candidates: scan.candidates,

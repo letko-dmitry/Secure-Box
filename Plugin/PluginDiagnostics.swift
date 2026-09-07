@@ -100,18 +100,22 @@ extension PluginDiagnostics {
         "ObfuscateMacro"
     ]
 
-    func dependencies(of dependencies: [TargetDependency], severity: Diagnostics.Severity) {
+    /**
+     Reports every required module the target cannot see.
+
+     Packages only: Xcode hands a plugin an empty `XcodeTarget.dependencies` no matter what the target is
+     wired to — package products and plain target dependencies alike — so the same walk over an Xcode target
+     would warn about both modules on every build (https://github.com/swiftlang/swift-package-manager/issues/6003).
+     There the compiler already names the missing module on the generated file.
+     */
+    func dependencies(of dependencies: [TargetDependency]) {
         var visited: Set<String> = []
         var reachable: Set<String> = []
 
         Self.collect(dependencies, visited: &visited, into: &reachable)
 
-        report(reachable: reachable, severity: severity)
-    }
-
-    func report(reachable: Set<String>, severity: Diagnostics.Severity) {
         Self.requiredModules.subtracting(reachable).sorted().forEach { module in
-            Diagnostics.emit(severity, "The generated Secure Box code imports '\(module)', which '\(targetName)' does not depend on. Add it to the dependencies of '\(targetName)'.")
+            Diagnostics.error("The generated Secure Box code imports '\(module)', which '\(targetName)' does not depend on. Add it to the dependencies of '\(targetName)'.")
         }
     }
 

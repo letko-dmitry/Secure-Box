@@ -19,7 +19,7 @@ struct Plugin: BuildToolPlugin {
 
         diagnostics.discovered(scan: scan, root: module.directoryURL)
         diagnostics.escaping(candidates: scan.candidates, root: module.directoryURL)
-        diagnostics.dependencies(of: target.dependencies, severity: .error)
+        diagnostics.dependencies(of: target.dependencies)
 
         return try process(
             candidates: scan.candidates,
