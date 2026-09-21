@@ -27,6 +27,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins.git", from: "0.53.0"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0"),
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0"..<"700.0.0"),
         .package(url: "https://github.com/p-x9/ObfuscateMacro.git", from: "0.13.0")
     ],
     targets: [
