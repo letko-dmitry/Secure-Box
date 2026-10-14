@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SecureBoxTypes
+import SecureBoxSeal
 
 struct ExecutablePaths {
     struct Directories {
@@ -27,7 +29,7 @@ struct ExecutablePaths {
             box: task.box
         )
         files = .init(
-            cache: directories.root.appending(path: "cache.json", directoryHint: .notDirectory),
+            cache: directories.root.appending(path: "cache-\(Algorithm.format).json", directoryHint: .notDirectory),
             code: task.code
         )
     }

@@ -11,9 +11,16 @@ package import SecureBoxTypes
 import CryptoKit
 
 package extension SecureBoxTypes.Algorithm {
+    /** The version of the layout `seal` writes and `open` reads. Bump it with any change to either: the cache is named after it, so everything is sealed again. */
+    static let format = 2
+
     func seal(_ data: Data, using key: Key) throws -> Data {
+        // The plaintext size goes first, big-endian, so opening decompresses straight into a buffer of that size.
+        let header = unsafe withUnsafeBytes(of: UInt64(data.count).bigEndian, Data.init(_:))
         // swiftlint:disable:next legacy_objc_type
-        try ChaChaPoly.seal((data as NSData).compressed(using: .lzfse), using: key.symmetric).combined
+        let compressed = try (data as NSData).compressed(using: .lzfse) as Data
+
+        return try ChaChaPoly.seal(header + compressed, using: key.symmetric).combined
     }
 }
 

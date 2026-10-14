@@ -8,12 +8,12 @@
 import Foundation
 import SecureBoxTypes
 import CryptoKit
+import Compression
 
 extension SecureBoxTypes.Algorithm {
     @inline(always)
     func open(_ data: consuming Data, using key: SymmetricKey) throws -> Data {
-        // swiftlint:disable:next legacy_objc_type
-        try Data(referencing: (decrypt(data, using: key) as NSData).decompressed(using: .lzfse))
+        try decompress(decrypt(data, using: key))
     }
 }
 
@@ -43,6 +43,33 @@ private extension SecureBoxTypes.Algorithm {
         try ChaChaPoly.open(inPlace: &span, using: key, nonce: nonce, tag: tag.span.bytes)
 
         return message
+    }
+
+    /** Reads what `seal` writes, see `Algorithm.format`: the plaintext size, then LZFSE decoded straight into a buffer of that size. */
+    func decompress(_ payload: borrowing Data) throws -> Data {
+        let bytes = payload.bytes, headerSize = MemoryLayout<UInt64>.size
+
+        guard bytes.byteCount >= headerSize else { throw CocoaError.error(.fileReadCorruptFile) }
+
+        let size = Int(UInt64(bigEndian: bytes.load(fromByteOffset: 0, as: UInt64.self)))
+        let compressed = bytes.extracting(droppingFirst: headerSize)
+        var plaintext = Data(count: size)
+        var output = plaintext.mutableBytes
+        let written = output.withUnsafeMutableBytes { output in
+            compressed.withUnsafeBytes { input in
+                guard let destination = output.baseAddress, let source = input.baseAddress else { return 0 }
+
+                return unsafe compression_decode_buffer(
+                    destination.assumingMemoryBound(to: UInt8.self), output.count,
+                    source.assumingMemoryBound(to: UInt8.self), input.count,
+                    nil, COMPRESSION_LZFSE
+                )
+            }
+        }
+
+        guard written == size else { throw CocoaError.error(.fileReadCorruptFile) }
+
+        return plaintext
     }
 }
 
