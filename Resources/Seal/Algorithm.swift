@@ -12,7 +12,7 @@ import CryptoKit
 
 package extension SecureBoxTypes.Algorithm {
     /** The version of the layout `seal` writes and `open` reads. Bump it with any change to either: the cache is named after it, so everything is sealed again. */
-    static let format = 2
+    static let format = 3
 
     func seal(_ data: Data, using key: Key) throws -> Data {
         // The plaintext size goes first, big-endian, so opening decompresses straight into a buffer of that size.
@@ -20,7 +20,10 @@ package extension SecureBoxTypes.Algorithm {
         // swiftlint:disable:next legacy_objc_type
         let compressed = try (data as NSData).compressed(using: .lzfse) as Data
 
-        return try ChaChaPoly.seal(header + compressed, using: key.symmetric).combined
+        // `combined` is missing only for a nonce other than the default 12 bytes.
+        guard let combined = try AES.GCM.seal(header + compressed, using: key.symmetric).combined else { throw CryptoKitError.incorrectParameterSize }
+
+        return combined
     }
 }
 

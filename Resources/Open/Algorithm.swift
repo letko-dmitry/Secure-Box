@@ -22,10 +22,10 @@ private extension SecureBoxTypes.Algorithm {
     /** `combined` is consumed, so the 27 releases decrypt it in place and older ones release it once `SealedBox` copies it. */
     func decrypt(_ combined: consuming Data, using key: SymmetricKey) throws -> Data {
         guard #available(anyAppleOS 27, *) else {
-            // A raw buffer specializes `SealedBox(combined:)` far smaller than `Data` does, and the box copies the bytes anyway.
-            let box = try unsafe (consume combined).withUnsafeBytes(ChaChaPoly.SealedBox.init(combined:))
+            // A raw buffer specializes `SealedBox(combined:)` smaller than `Data` does, and the box copies the bytes anyway.
+            let box = try unsafe (consume combined).withUnsafeBytes(AES.GCM.SealedBox.init(combined:))
 
-            return try ChaChaPoly.open(box, using: key)
+            return try AES.GCM.open(box, using: key)
         }
 
         let nonceSize = 12, tagSize = 16
@@ -34,13 +34,13 @@ private extension SecureBoxTypes.Algorithm {
         guard combined.count >= nonceSize &+ tagSize else { throw CryptoKitError.incorrectParameterSize }
 
         let start = combined.startIndex, end = combined.endIndex
-        let nonce = try ChaChaPoly.Nonce(copying: combined.bytes.extracting(first: nonceSize))
+        let nonce = try AES.GCM.Nonce(copying: combined.bytes.extracting(first: nonceSize))
         // A copy on the stack: the tag cannot stay borrowed from `combined` while the message in it is decrypted.
         let tag = combined.bytes.load(fromByteOffset: combined.count &- tagSize, as: [16 of UInt8].self)
         var message = (consume combined)[start &+ nonceSize ..< end &- tagSize]
         var span = message.mutableBytes
 
-        try ChaChaPoly.open(inPlace: &span, using: key, nonce: nonce, tag: tag.span.bytes)
+        try AES.GCM.open(inPlace: &span, using: key, nonce: nonce, tag: tag.span.bytes)
 
         return message
     }
