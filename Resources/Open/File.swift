@@ -9,16 +9,12 @@ public import SecureBoxTypes
 public import Foundation
 
 import Algorithms
+import CryptoKit
 
 public extension File {
     func open() throws -> Data {
-        enum OpenError: Error {
-            case invalidPath
-            case invalidKey
-        }
-
-        guard let fileUrl = path.url else { throw OpenError.invalidPath }
-        guard let key = Algorithm.Key(base64: key) else { throw OpenError.invalidKey }
+        guard let fileUrl = path.url else { throw CocoaError.error(.fileNoSuchFile) }
+        guard let key = SymmetricKey(base64: key) else { throw CryptoKitError.incorrectKeySize }
         
         return try Algorithm().open(Data(contentsOf: fileUrl, options: .uncached), using: key)
     }

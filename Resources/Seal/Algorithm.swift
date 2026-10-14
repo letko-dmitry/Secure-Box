@@ -18,6 +18,13 @@ package extension SecureBoxTypes.Algorithm {
 }
 
 // MARK: - Algorithm.Key
+package extension SecureBoxTypes.Algorithm {
+    /** Lives here rather than in `SecureBoxTypes`, so apps don't ship its metadata: opening needs only the `SymmetricKey`. */
+    struct Key: Sendable {
+        let symmetric: SymmetricKey
+    }
+}
+
 package extension SecureBoxTypes.Algorithm.Key {
     /** `SymmetricKey` accepts data of any length, so the expected one has to be enforced by hand. */
     fileprivate static let size: SymmetricKeySize = .bits256

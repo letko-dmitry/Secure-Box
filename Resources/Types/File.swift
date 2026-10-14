@@ -16,7 +16,8 @@ public struct File: Sendable {
         @usableFromInline package let subdirectory: String?
         @usableFromInline package let bundle: Bundle
         
-        @inlinable
+        @inline(always)
+        @export(implementation)
         public init(name: String, extension: String? = "dat", subdirectory: String? = nil, bundle: Bundle = .main) {
             self.name = name
             self.extension = `extension`
@@ -28,7 +29,8 @@ public struct File: Sendable {
     @usableFromInline package let path: Path
     @usableFromInline package let key: String
     
-    @inlinable
+    @inline(always)
+    @export(implementation)
     public init(path: Path, key: String) {
         self.path = path
         self.key = key

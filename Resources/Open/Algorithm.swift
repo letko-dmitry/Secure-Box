@@ -10,17 +10,20 @@ import SecureBoxTypes
 import CryptoKit
 
 extension SecureBoxTypes.Algorithm {
-    func open(_ data: Data, using key: Key) throws -> Data {
+    /** `data` is consumed, so the ciphertext is released as soon as `SealedBox` copies it, not after decryption. */
+    @inline(always)
+    func open(_ data: consuming Data, using key: SymmetricKey) throws -> Data {
         // swiftlint:disable:next legacy_objc_type
-        try Data(referencing: (ChaChaPoly.open(.init(combined: data), using: key.symmetric) as NSData).decompressed(using: .lzfse))
+        try Data(referencing: (ChaChaPoly.open(.init(combined: data), using: key) as NSData).decompressed(using: .lzfse))
     }
 }
 
-// MARK: - Algorithm.Key
-extension SecureBoxTypes.Algorithm.Key {
-    init?(base64: String) {
+// MARK: - SymmetricKey
+extension SymmetricKey {
+    /** Initializers consume their parameters by default, but `base64` is only read. */
+    init?(base64: borrowing String) {
         guard let data = Data(base64Encoded: base64) else { return nil }
-        
-        self.init(symmetric: .init(data: data))
+
+        self.init(data: data)
     }
 }
