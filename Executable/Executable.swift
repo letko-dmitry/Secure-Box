@@ -39,13 +39,6 @@ private extension Executable {
         )
 
         let (reset, hasCache) = await (cacheCorrupted, cache != nil)
-
-        // The generated code is an output of this tool as well, so a missing one has to be regenerated even
-        // when nothing else changed.
-        let hasCode = FileManager.default.fileExists(atPath: paths.files.code.path(percentEncoded: false))
-
-        guard diff.hasChanges || !hasCache || !hasCode else { return }
-
         let all = diff.all.sorted(using: SortDescriptor(\.input.url.absoluteString, comparator: .lexical))
 
         try await withThrowingDiscardingTaskGroup { group in
@@ -55,10 +48,14 @@ private extension Executable {
                 }
             }
 
-            group.addTask {
-                Cache(resources: all).write(to: paths.files.cache)
+            if diff.hasChanges || !hasCache {
+                group.addTask {
+                    Cache(resources: all).write(to: paths.files.cache)
+                }
             }
 
+            // On every run, even when nothing changed: the code may be missing, or a newer version of this tool
+            // may generate other code for the very same resources. An unchanged file is left untouched.
             group.addTask {
                 try CodeGenerator(fileUrl: paths.files.code).generate(for: all)
             }

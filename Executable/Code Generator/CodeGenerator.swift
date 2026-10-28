@@ -15,7 +15,7 @@ struct CodeGenerator {
 
     func generate(for resources: [Resource]) throws {
         let declarations = try declarations(for: resources)
-        let code = """
+        let code = Data("""
             import Foundation
             import ObfuscateMacro
             import SecureBoxTypes
@@ -23,10 +23,9 @@ struct CodeGenerator {
             enum SecureBox {
             \(declarations.map(\.code).joined(separator: "\n\n"))
             }
-            """
+            """.utf8)
 
-        try FileManager.default.createDirectory(at: fileUrl.deletingLastPathComponent(), withIntermediateDirectories: true)
-        try code.write(to: fileUrl, atomically: true, encoding: .utf8)
+        try code.writeIfChanged(to: fileUrl)
     }
 }
 
@@ -98,5 +97,15 @@ private extension String {
         }
 
         return "\"\(escaped)\""
+    }
+}
+
+// MARK: - Data
+private extension Data {
+    func writeIfChanged(to fileUrl: URL) throws {
+        if (try? Data(contentsOf: fileUrl, options: .uncached)) != self {
+            try FileManager.default.createDirectory(at: fileUrl.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try write(to: fileUrl, options: .atomic)
+        }
     }
 }
