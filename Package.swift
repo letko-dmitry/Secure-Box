@@ -58,7 +58,6 @@ let package = Package(
         .target(
             name: "SecureBoxOpen",
             dependencies: [
-                .product(name: "Algorithms", package: "swift-algorithms"),
                 .target(name: "SecureBoxTypes")
             ],
             path: "Resources/Open",

@@ -15,13 +15,16 @@ struct CodeGenerator {
 
     func generate(for resources: [Resource]) throws {
         let declarations = try declarations(for: resources)
+        // One lookup for all resources, as outside a package `#bundle` asks the dynamic loader. Emitted only next to
+        // a resource: in a package target without resources an unused `#bundle` does not compile.
+        let members = declarations.isEmpty ? [] : ["    private static let _bundle = #bundle"] + declarations.map(\.code)
         let code = Data("""
             import Foundation
             import ObfuscateMacro
             import SecureBoxTypes
 
             enum SecureBox {
-            \(declarations.map(\.code).joined(separator: "\n\n"))
+            \(members.joined(separator: "\n\n"))
             }
             """.utf8)
 
@@ -62,7 +65,8 @@ private extension CodeGenerator.Declaration {
         """
             static let \(identifier.declaration) = SecureBoxTypes.File(
                 path: .init(
-                    name: \(resource.output.name.swiftLiteral)
+                    name: \(resource.output.name.swiftLiteral),
+                    bundle: _bundle
                 ),
                 key: #ObfuscatedString(\(resource.output.key.base64.swiftLiteral))
             )

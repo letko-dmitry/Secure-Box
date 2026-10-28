@@ -8,7 +8,6 @@
 public import SecureBoxTypes
 public import Foundation
 
-import Algorithms
 import CryptoKit
 
 public extension File {
@@ -23,16 +22,6 @@ public extension File {
 // MARK: - File.Path
 private extension File.Path {
     var url: URL? {
-        func url(in bundle: Bundle) -> URL? {
-            bundle.url(forResource: name, withExtension: `extension`, subdirectory: subdirectory)
-        }
-        
-        if let url = url(in: bundle) { return url }
-        
-        return bundle
-            .urls(forResourcesWithExtension: "bundle", subdirectory: nil)?
-            .lazy
-            .compactMap { Bundle(url: $0) }
-            .firstNonNil(url(in:))
+        bundle.url(forResource: name, withExtension: `extension`, subdirectory: subdirectory)
     }
 }
