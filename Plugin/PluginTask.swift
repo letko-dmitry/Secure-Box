@@ -1,6 +1,6 @@
 //
 //  PluginTask.swift
-//  
+//
 //
 //  Created by Dzmitry Letko on 25/09/2023.
 //

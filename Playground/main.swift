@@ -1,6 +1,6 @@
 //
 //  main.swift
-//  
+//
 //
 //  Created by Dzmitry Letko on 05/10/2023.
 //

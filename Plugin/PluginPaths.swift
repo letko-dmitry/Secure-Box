@@ -38,6 +38,6 @@ struct PluginPaths {
     
     /** Builds the `Output/Box/<name>.dat` path for a sealed resource. */
     func output(name: String) -> URL {
-        return directories.box.appending(component: "\(name).dat", directoryHint: .notDirectory)
+        directories.box.appending(component: "\(name).dat", directoryHint: .notDirectory)
     }
 }

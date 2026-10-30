@@ -6,7 +6,7 @@ struct Plugin: BuildToolPlugin {
     let targetDirectoryName = "Box"
     let toolName = "SecureBoxExecutable"
 
-    func createBuildCommands(context: PluginContext, target: Target) async throws -> [Command] {
+    func createBuildCommands(context: PluginContext, target: Target) throws -> [Command] {
         guard let module = target.sourceModule else {
             throw PluginError.sourceModuleUnavailable(target.name)
         }

@@ -7,8 +7,8 @@
 
 import Algorithms
 import Foundation
-import SecureBoxTypes
 import SecureBoxSeal
+import SecureBoxTypes
 
 struct CodeGenerator {
     let fileUrl: URL

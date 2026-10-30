@@ -1,0 +1,132 @@
+# SwiftFormat configuration for this repository.
+#
+# RULES URL: https://github.com/nicklockwood/SwiftFormat/blob/main/Rules.md
+# OPTIONS:   swiftformat --options
+# RULE INFO: swiftformat --ruleinfo <name>
+#
+# Each rule below was measured against this code: the number in parentheses is how many files it would
+# rewrite here (SwiftFormat 0.64.4, `swiftformat . --lint --cache ignore --rules <name>`).
+#
+# The pre-action of the shared Secure-Box-Package scheme formats in place before every build. To run it
+# by hand:
+#     Tools/SwiftFormat/format.sh
+
+
+# --- Options ------------------------------------------------------------------------------------
+
+# --swift-version is the COMPILER (`xcrun swift --version`), which gates the rewrites a rule may emit.
+# Above swift-tools-version 6.2 on purpose: the code calls `AES.GCM.open(inPlace:)`, which only the 27
+# SDKs have, and those come with the 6.4 compiler.
+--swift-version 6.4
+--language-mode 6
+
+--trailing-commas never
+--empty-braces spaced
+--line-after-marks false
+# Mirrors .swiftlint.yml's `trailing_whitespace: ignores_empty_lines: true`.
+--trim-whitespace nonblank-lines
+--import-grouping access-control,alpha
+--hoist-imports preserve
+
+# Every pattern here is `case let .foo(bar)` (11 sites, none written `case .foo(let bar)`).
+--pattern-let hoist
+
+--ranges no-space
+--operator-func spaced
+
+# The default grouping thresholds strip the underscores from literals such as `10_000`.
+--decimal-grouping ignore
+--hex-grouping ignore
+--binary-grouping ignore
+--octal-grouping ignore
+
+--file-macro "#fileID"
+
+# SwiftLint's multiline_* rules report a bracket that a wrap collapses onto its content line. These are
+# the defaults, pinned so that a future default cannot change them.
+--wrap-arguments preserve
+--wrap-collections preserve
+--wrap-conditions preserve
+--wrap-type-aliases preserve
+--wrap-return-type preserve
+--wrap-effects preserve
+
+
+# --- Excludes -----------------------------------------------------------------------------------
+
+# The build folder .gitignore lists, which can hold the dependencies' sources. SwiftFormat already skips
+# hidden folders such as .build and any folder named DerivedData. Resolves relative to this file.
+--exclude build
+
+
+# --- Rules enabled beyond the defaults ----------------------------------------------------------
+
+# Each fixes what an enabled SwiftLint rule would report, before the linter runs.
+--enable isEmpty                  # empty_count
+--enable preferContains           # contains_over_filter_is_empty, contains_over_first_not_nil
+--enable preferFirstWhere         # first_where
+--enable preferCountWhere         # contains_over_filter_count
+--enable preferMinOverSorted      # sorted_first_last, for .first only
+--enable preferFlatMap            # flatmap_over_map_reduce, reduce_into
+--enable blankLineAfterSwitchCase # vertical_whitespace_between_cases
+
+# No SwiftLint pairing: such a rule earns its place only while it rewrites nothing, and these rewrite
+# nothing (0). They repair the construct the first time somebody writes it.
+--enable emptyExtensions
+--enable preferSwiftStringAPI
+--enable commonTypos
+--enable preferSwiftTesting
+
+# By the same measure singlePropertyPerLine (1) and preferLazyMap (1) stay off: the first would split
+# the paired declarations in Resources/Open/Algorithm.swift.
+
+
+# --- Disabled rules -----------------------------------------------------------------------------
+
+# Moves the brace of a multi-line statement onto its own line, which SwiftLint's opening_brace reports. (0)
+--disable wrapMultilineStatementBraces
+
+# Disagrees with Xcode's re-indent on every wrapped expression; SwiftLint's indentation_width checks
+# indentation instead. (3)
+--disable indent
+
+# With `indent` off, these leave the surviving body at its old depth. (0)
+--disable redundantSwiftUIGroup
+--disable redundantClosure
+
+# Can emit an `@Entry` split from its `var`, which does not compile. (0)
+--disable environmentEntry
+
+# .swiftlint.yml disables redundant_string_enum_value: a raw value is a storage format. (0)
+--disable redundantRawValues
+
+# .swiftlint.yml disables syntactic_sugar. (1)
+--disable typeSugar
+
+# SwiftLint's modifier_order reports instead. The two default orders disagree (`nonisolated public` against
+# `public nonisolated`), so the formatter would undo what the linter asks for. (0)
+--disable modifierOrder
+
+# Removes the blank line between import groups of different access levels. (2)
+--disable blankLinesBetweenImports
+
+# Promotes `//` comments above a declaration to `///`; documentation here is `/** */`. (0)
+--disable docComments
+
+# Style left to the author: each would rewrite working code into one form that no SwiftLint rule asks for.
+--disable consecutiveSpaces        # (1) would also flatten columns aligned by hand
+--disable redundantSelf            # (3)
+--disable wrapPropertyBodies       # (0)
+--disable conditionalAssignment    # (0)
+--disable unusedArguments          # (0)
+--disable wrapIfStatementBodies    # (0)
+--disable wrapIfExpressionBodies   # (0)
+--disable preferForLoop            # (5) the code iterates with forEach
+--disable hoistTry                 # (1)
+--disable opaqueGenericParameters  # (0)
+--disable wrapFunctionBodies       # (0)
+--disable repeatedGuard            # (0)
+
+# KNOWN DEFECT, kept on: redundantParens rewrites `(consume x)[range]` into `consume x[range]`, which does
+# not compile ("'consume' can only be used to partially consume storage of a noncopyable type"). The one
+# such line, in Resources/Open/Algorithm.swift, opts out with `swiftformat:disable:next`.

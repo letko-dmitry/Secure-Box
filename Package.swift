@@ -19,13 +19,12 @@ let package = Package(
         ),
         .plugin(
             name: "SecureBoxPlugin",
-            targets:  [
+            targets: [
                 "SecureBoxPlugin"
             ]
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins.git", from: "0.53.0"),
         .package(url: "https://github.com/apple/swift-algorithms.git", from: "1.0.0"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", "600.0.0"..<"700.0.0"),
         .package(url: "https://github.com/p-x9/ObfuscateMacro.git", from: "0.13.0")
@@ -39,10 +38,7 @@ let package = Package(
                 .target(name: "SecureBoxSeal")
             ],
             path: "Executable",
-            swiftSettings: .default,
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
-            ]
+            swiftSettings: .default
         ),
         .target(
             name: "SecureBoxTypes",
@@ -50,10 +46,7 @@ let package = Package(
                 .product(name: "ObfuscateMacro", package: "ObfuscateMacro")
             ],
             path: "Resources/Types",
-            swiftSettings: .default,
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
-            ]
+            swiftSettings: .default
         ),
         .target(
             name: "SecureBoxOpen",
@@ -61,10 +54,7 @@ let package = Package(
                 .target(name: "SecureBoxTypes")
             ],
             path: "Resources/Open",
-            swiftSettings: .default,
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
-            ]
+            swiftSettings: .default
         ),
         .target(
             name: "SecureBoxSeal",
@@ -72,10 +62,7 @@ let package = Package(
                 .target(name: "SecureBoxTypes")
             ],
             path: "Resources/Seal",
-            swiftSettings: .default,
-            plugins: [
-                .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
-            ]
+            swiftSettings: .default
         ),
         .plugin(
             name: "SecureBoxPlugin",
@@ -89,7 +76,7 @@ let package = Package(
             name: "SecureBoxPlayground",
             dependencies: [
                 .target(name: "SecureBoxTypes"),
-                .target(name: "SecureBoxOpen"),
+                .target(name: "SecureBoxOpen")
             ],
             path: "Playground",
             exclude: [

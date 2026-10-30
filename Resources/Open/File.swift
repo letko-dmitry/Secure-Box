@@ -5,8 +5,8 @@
 //  Created by Dzmitry Letko on 09/10/2025.
 //
 
-public import SecureBoxTypes
 public import Foundation
+public import SecureBoxTypes
 
 import CryptoKit
 

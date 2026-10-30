@@ -1,6 +1,6 @@
 import Foundation
-import SecureBoxTypes
 import SecureBoxSeal
+import SecureBoxTypes
 
 @main
 enum Executable {

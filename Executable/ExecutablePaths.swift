@@ -6,8 +6,8 @@
 //
 
 import Foundation
-import SecureBoxTypes
 import SecureBoxSeal
+import SecureBoxTypes
 
 struct ExecutablePaths {
     struct Directories {

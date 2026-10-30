@@ -6,9 +6,9 @@
 //
 
 import Foundation
-import UniformTypeIdentifiers
-import SecureBoxTypes
 import SecureBoxSeal
+import SecureBoxTypes
+import UniformTypeIdentifiers
 
 struct Resource: Codable {
     struct Input: Codable, Hashable {

@@ -5,10 +5,10 @@
 //  Created by Dzmitry Letko on 09/10/2025.
 //
 
+import Compression
+import CryptoKit
 import Foundation
 import SecureBoxTypes
-import CryptoKit
-import Compression
 
 extension SecureBoxTypes.Algorithm {
     @inline(always)
@@ -37,7 +37,8 @@ private extension SecureBoxTypes.Algorithm {
         let nonce = try AES.GCM.Nonce(copying: combined.bytes.extracting(first: nonceSize))
         // A copy on the stack: the tag cannot stay borrowed from `combined` while the message in it is decrypted.
         let tag = combined.bytes.load(fromByteOffset: combined.count &- tagSize, as: [16 of UInt8].self)
-        var message = (consume combined)[start &+ nonceSize ..< end &- tagSize]
+        // swiftformat:disable:next redundantParens - `consume combined[…]` does not compile
+        var message = (consume combined)[start &+ nonceSize..<end &- tagSize]
         var span = message.mutableBytes
 
         try AES.GCM.open(inPlace: &span, using: key, nonce: nonce, tag: tag.span.bytes)
@@ -60,9 +61,12 @@ private extension SecureBoxTypes.Algorithm {
                 guard let destination = output.baseAddress, let source = input.baseAddress else { return 0 }
 
                 return unsafe compression_decode_buffer(
-                    destination.assumingMemoryBound(to: UInt8.self), output.count,
-                    source.assumingMemoryBound(to: UInt8.self), input.count,
-                    nil, COMPRESSION_LZFSE
+                    destination.assumingMemoryBound(to: UInt8.self),
+                    output.count,
+                    source.assumingMemoryBound(to: UInt8.self),
+                    input.count,
+                    nil,
+                    COMPRESSION_LZFSE
                 )
             }
         }
