@@ -14,9 +14,8 @@
 
 # --- Options ------------------------------------------------------------------------------------
 
-# --swift-version is the COMPILER (`xcrun swift --version`), which gates the rewrites a rule may emit.
-# Above swift-tools-version 6.2 on purpose: the code calls `AES.GCM.open(inPlace:)`, which only the 27
-# SDKs have, and those come with the 6.4 compiler.
+# --swift-version gates the rewrites a rule may emit, so it is the oldest compiler that builds this
+# package: the swift-tools-version in Package.swift. Raise them together.
 --swift-version 6.4
 --language-mode 6
 
