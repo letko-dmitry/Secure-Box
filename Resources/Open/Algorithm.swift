@@ -50,7 +50,7 @@ private extension SecureBoxTypes.Algorithm {
     func decompress(_ payload: borrowing Data) throws -> Data {
         let bytes = payload.bytes, headerSize = MemoryLayout<UInt64>.size
 
-        guard bytes.byteCount >= headerSize else { throw CocoaError.error(.fileReadCorruptFile) }
+        guard bytes.byteCount >= headerSize else { throw cocoaError(.fileReadCorruptFile) }
 
         let size = Int(UInt64(bigEndian: bytes.load(fromByteOffset: 0, as: UInt64.self)))
         let compressed = bytes.extracting(droppingFirst: headerSize)
@@ -71,10 +71,17 @@ private extension SecureBoxTypes.Algorithm {
             }
         }
 
-        guard written == size else { throw CocoaError.error(.fileReadCorruptFile) }
+        guard written == size else { throw cocoaError(.fileReadCorruptFile) }
 
         return plaintext
     }
+}
+
+// MARK: - CocoaError
+/** Every `CocoaError` this module throws, out of line: built at each `throw`, one costs about 100 bytes of code. The `NSError` is the one `CocoaError.error(_:)` makes, with less code to make it. */
+@inline(never)
+func cocoaError(_ code: CocoaError.Code) -> any Error {
+    NSError(domain: NSCocoaErrorDomain, code: code.rawValue, userInfo: nil)
 }
 
 // MARK: - SymmetricKey
