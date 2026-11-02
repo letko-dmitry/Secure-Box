@@ -15,7 +15,7 @@ public extension File {
         guard let fileUrl = path.url else { throw cocoaError(.fileNoSuchFile) }
         guard let key = SymmetricKey(base64: key) else { throw CryptoKitError.incorrectKeySize }
         
-        return try Algorithm().open(Data(contentsOf: fileUrl, options: .uncached), using: key)
+        return try Algorithm().open(Data(contentsOf: fileUrl), using: key)
     }
 }
 
