@@ -19,13 +19,6 @@ public extension File {
     }
 }
 
-// MARK: - File.Path
-private extension File.Path {
-    var filePath: String? {
-        bundle.path(forResource: name, ofType: `extension`, inDirectory: subdirectory)
-    }
-}
-
 // MARK: - Data
 private extension Data {
     /**
