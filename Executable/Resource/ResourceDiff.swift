@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SecureBoxSeal
+import SecureBoxTypes
 
 struct ResourceDiff {
     let all: [Resource]
@@ -19,12 +21,15 @@ struct ResourceDiff {
 
 enum ResourceDiffBuilder {
     static func make(candidates: [ResourceCandidate], cached: [Resource]) -> ResourceDiff {
-        let fileManager = FileManager.default
+        let algorithm = Algorithm()
         let candidates = Set(candidates)
 
-        // A cached resource whose sealed file is gone has to be sealed again, so it cannot count as cached.
+        // A cached resource counts only while its sealed file opens with its key. The file may be gone, or sealed again
+        // under another key: a build at another format seals into the same files, with keys of its own.
         let cached = cached.filter { resource in
-            fileManager.fileExists(atPath: resource.output.url.path(percentEncoded: false))
+            guard let sealed = try? Data(contentsOf: resource.output.url, options: .uncached) else { return false }
+
+            return algorithm.opens(sealed, using: resource.output.key)
         }
         let updated = candidates.subtracting(cached.map(ResourceCandidate.init(resource:)))
 

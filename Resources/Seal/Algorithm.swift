@@ -37,6 +37,11 @@ package extension SecureBoxTypes.Algorithm {
 
         return combined
     }
+
+    /** Whether `sealed` was sealed with `key`: AES-GCM authenticates a sealed file under its own key only. */
+    func opens(_ sealed: Data, using key: Key) -> Bool {
+        (try? AES.GCM.open(AES.GCM.SealedBox(combined: sealed), using: key.symmetric)) != nil
+    }
 }
 
 // MARK: - private
