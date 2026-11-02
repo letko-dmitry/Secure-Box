@@ -46,18 +46,36 @@ private extension SecureBoxTypes.Algorithm {
         return message
     }
 
-    /** Reads what `seal` writes, see `Algorithm.format`: the plaintext size, then LZFSE decoded straight into a buffer of that size. */
+    /** Reads what `seal` writes, see `Algorithm.format`: the plaintext size, the method (as is, LZ4 or LZFSE), then the plaintext, copied or decoded straight into a buffer of that size. */
     func decompress(_ payload: borrowing Data) throws -> Data {
-        let bytes = payload.bytes, headerSize = MemoryLayout<UInt64>.size
+        let bytes = payload.bytes, methodOffset = MemoryLayout<UInt64>.size, headerSize = methodOffset &+ MemoryLayout<UInt8>.size
 
         guard bytes.byteCount >= headerSize else { throw cocoaError(.fileReadCorruptFile) }
 
         let size = Int(UInt64(bigEndian: bytes.load(fromByteOffset: 0, as: UInt64.self)))
-        let compressed = bytes.extracting(droppingFirst: headerSize)
+        let body = bytes.extracting(droppingFirst: headerSize)
+        let algorithm: compression_algorithm
+
+        switch bytes.load(fromByteOffset: methodOffset, as: UInt8.self) {
+        case Self.stored:
+            guard body.byteCount == size else { throw cocoaError(.fileReadCorruptFile) }
+
+            return body.withUnsafeBytes { unsafe Data($0) }
+
+        case Self.lz4:
+            algorithm = COMPRESSION_LZ4_RAW
+
+        case Self.lzfse:
+            algorithm = COMPRESSION_LZFSE
+
+        default:
+            throw cocoaError(.fileReadCorruptFile)
+        }
+
         var plaintext = Data(count: size)
         var output = plaintext.mutableBytes
         let written = output.withUnsafeMutableBytes { output in
-            compressed.withUnsafeBytes { input in
+            body.withUnsafeBytes { input in
                 guard let destination = output.baseAddress, let source = input.baseAddress else { return 0 }
 
                 return unsafe compression_decode_buffer(
@@ -66,7 +84,7 @@ private extension SecureBoxTypes.Algorithm {
                     source.assumingMemoryBound(to: UInt8.self),
                     input.count,
                     nil,
-                    COMPRESSION_LZFSE
+                    algorithm
                 )
             }
         }
